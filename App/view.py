@@ -67,11 +67,11 @@ while True:
         controller.loadData(catalog,ufofile)
         print('Se han cargado los datos...')
         info= controller.total_sightings(catalog)
-        # print("Total de avistamientos cargados: "+ str(info[0]))
-        # print("Los primeros 5 avistamientos son:")
-        # print(info[1])
-        # print("Los últimos 5 avistamientos son:")
-        # print(info[2])
+        print("Total de avistamientos cargados: "+ str(info[0]))
+        print("Los primeros 5 avistamientos son:")
+        print(info[1])
+        print("Los últimos 5 avistamientos son:")
+        print(info[2])
 
     elif int(inputs[0]) == 2:
         ciudad= input("Ingrese el nombre de la ciudad a consultar: ")
