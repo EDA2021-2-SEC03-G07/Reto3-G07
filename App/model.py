@@ -25,14 +25,18 @@
  """
 
 
+from DISClib.DataStructures.arraylist import size, subList
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import mergesort as merge
 from DISClib.ADT import orderedmap as om
+from datetime import date, datetime as dtime
+from DISClib.Algorithms.Trees import traversal
 import datetime
 import time
+import folium
 assert cf
 
 """
@@ -45,10 +49,13 @@ def InitCatalog():
     catalog = {'UFO_sightings': None,
                 'duration_UFO': None,
                 'datetime_UFO': None,
+                'hour_UFO': None,
                 'cities': None}
     catalog['UFO_sightings'] = lt.newList(datastructure='ARRAY_LIST')
-    catalog['duration_UFO'] = om.newMap(omaptype='RBT', comparefunction=cmpFloats)
-    catalog['datetime_UFO'] = om.newMap(omaptype='RBT')
+    catalog['duration_UFO'] = om.newMap(omaptype='RBT', comparefunction= cmpSeconds)
+    catalog['datetime_UFO'] = om.newMap(omaptype='RBT', comparefunction= cmpDate)
+    catalog['hour_UFO'] = om.newMap(omaptype="RBT", comparefunction= cmpHour)
+    catalog['longitudes'] = om.newMap(omaptype="RBT", comparefunction= cmpFloats)
     catalog['cities'] = om.newMap(omaptype="RBT")
 
     return catalog
@@ -58,6 +65,8 @@ def addUFO(catalog, ufo_event):
     lt.addLast(catalog['UFO_sightings'], ufo_event)
     updateDuration(catalog['duration_UFO'], ufo_event)
     updateDatetime(catalog['datetime_UFO'], ufo_event)
+    updateHour(catalog['hour_UFO'], ufo_event)
+    addLongitude(catalog['longitudes'], ufo_event)
     addCity(catalog['cities'], ufo_event)
 
 def updateDuration(orderedmap, ufo_event):
@@ -85,6 +94,29 @@ def updateDatetime(orderedmap, ufo_event):
         value_entry = me.getValue(time_entry)
         lt.addLast(value_entry, ufo_event)
     return orderedmap
+def updateHour(orderedmap, ufo_event):
+    hour_event = ufo_event['datetime']
+    ufodate = datetime.datetime.strptime(hour_event, '%Y-%m-%d %H:%M:%S')
+    time_entry = om.get(orderedmap, ufodate.time())
+    if time_entry is None:
+        ufodate_list = lt.newList()
+        lt.addLast(ufodate_list, ufo_event)
+        om.put(orderedmap,ufodate.time(),ufodate_list)
+    else:
+        value_entry = me.getValue(time_entry)
+        lt.addLast(value_entry, ufo_event)
+    return orderedmap
+
+def addLongitude(map, ufo_event):
+    datalongitud = round(float(ufo_event["longitude"]),2)
+    entry = om.get(map, datalongitud)
+    if entry is None:
+        datentry = lt.newList('ARRAY_LIST')
+        om.put(map, datalongitud, datentry)
+    else:
+        datentry = me.getValue(entry)
+    lt.addLast(datentry,ufo_event)
+    return map
 
 def addCity(map, ufo_event):
     city= ufo_event["city"]
@@ -153,7 +185,80 @@ def sightings_by_duration(catalog,min,max):
 
 
 
+#Requerimiento 3 - Jesed Dominguez
+def older_hour(orderedmap):
+    dates_tree = orderedmap['hour_UFO']
+    #Para que imprima la hora más tardía con el número de avistamientos
+    older_hour = traversal.inorder(dates_tree)
+    return older_hour
+    #Para listar avistamientos dentro de horas
+def hours_in_range(orderedmap, lowhour, highhour):
+    dates_tree = orderedmap['hour_UFO']
+    hours_sightings = lt.newList('ARRAY_LIST')
+    mindate = datetime.datetime.strptime(lowhour, '%H:%M:%S')
+    maxdate = datetime.datetime.strptime(highhour, '%H:%M:%S')
+    mindate = mindate.time()
+    maxdate = maxdate.time()
+    lst_range = om.values(dates_tree,mindate,maxdate)
+    for i in lt.iterator(lst_range):
+        merge.sort(i,cmpByDatetime)
+        for j in lt.iterator(i):
+            lt.addLast(hours_sightings, j)
+    return hours_sightings
 
+#Requerimiento 4
+def older_sightings(orderedmap):
+    dates_tree = orderedmap['datetime_UFO']
+    #Para que imprima la fecha más antigua con el número de avistamientos
+    older_date = traversal.inorder(dates_tree)
+    return older_date
+    #Para listar avistamientos dentro de fechas
+def dates_in_range(orderedmap, lowdate, highdate):
+    dates_tree = orderedmap['datetime_UFO']
+    mindate = datetime.datetime.strptime(lowdate, '%Y-%m-%d')
+    maxdate = datetime.datetime.strptime(highdate, '%Y-%m-%d')
+    mindate = mindate.date()
+    maxdate = maxdate.date()
+    lst_range = om.values(dates_tree,mindate,maxdate)
+    sub_dates = lt.subList(lst_range,0,lt.size(lst_range)+1)
+    Primeros = lt.subList(lst_range,1,3)
+    Ultimos = lt.newList('ARRAY_LIST')
+    j = 0
+    while j < 3:
+        last = lt.removeLast(sub_dates)
+        lt.addLast(Ultimos, last)
+        j += 1
+    Ultimos = merge.sort(Ultimos, cmpDatetolst)
+    return lst_range,Primeros,Ultimos
+
+#Requerimiento 5
+def sightings_by_zone(catalog,min_long,max_long,min_lat,max_lat):
+    data_tree = catalog["longitudes"]
+    mapas_latitud_en_rango = om.values(data_tree,min_long,max_long)
+    final_range_lst = lt.newList('ARRAY_LIST')
+    for data1 in lt.iterator(mapas_latitud_en_rango):
+        for data2 in lt.iterator(data1):
+            cmpdata = round(float(data2['latitude']),2)
+            if cmpdata >= min_lat and cmpdata <= max_lat:
+                lt.addLast(final_range_lst, data2)
+    final_range_lst = merge.sort(final_range_lst, cmpByDatetime)
+    sightings_size = size_in_range(final_range_lst)
+    sub_dates = lt.subList(final_range_lst,0,lt.size(final_range_lst)+1)
+    Primeros = lt.subList(final_range_lst,1,5)
+    Ultimos = lt.newList('ARRAY_LIST')
+    j = 0
+    while j < 5:
+        last = lt.removeLast(sub_dates)
+        lt.addLast(Ultimos, last)
+        j += 1
+    Ultimos = merge.sort(Ultimos, cmpByDatetime)
+    return final_range_lst, sightings_size, Primeros, Ultimos
+
+#Funciones generales
+#Para el número de avistamientos dentro del rango
+def size_in_range(lst):
+    cont = lt.size(lst)
+    return cont
 # Funciones de comparación
 def cmpByDatetime(sighting1, sighting2): #para mergesort
     datetime1= time.strptime(sighting1["datetime"], "%Y-%m-%d %H:%M:%S")
@@ -174,5 +279,42 @@ def cmpByCity(city1,city2): #para mergesort
     str1= city1["city"]
     str2= city2["city"]
     return str1 < str2
+def cmpHour(hour1, hour2):
+    if (hour1 == hour2):
+        return 0
+    elif (hour1 > hour2):
+        return 1
+    else:
+        return -1
+
+def cmpSeconds(duration1, duration2):
+    duration1 = float(duration1)
+    duration2 = float(duration2)
+
+    if (duration1 == duration2):
+        return 0
+    elif (duration1 > duration2):
+        return 1
+    else:
+        return -1
+
+def cmpDate(ufo1, ufo2):
+
+    if (ufo1 == ufo2):
+        return 0
+    elif (ufo1 > ufo2):
+        return 1
+    else:
+        return -1
+
+def cmpDatetolst(ufo1, ufo2):
+    ufo1= time.strptime(ufo1["first"]['info']["datetime"], "%Y-%m-%d %H:%M:%S")
+    ufo2= time.strptime(ufo2["first"]['info']["datetime"], "%Y-%m-%d %H:%M:%S")
+    if (ufo1 == ufo2):
+        return 0
+    elif (ufo1 > ufo2):
+        return 1
+    else:
+        return -1
 
 # Funciones de ordenamiento
