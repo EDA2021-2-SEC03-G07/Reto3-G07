@@ -101,7 +101,30 @@ while True:
         print("El número de elementos dentro del árbol implementado para este requerimiento es: "+ str(info[0]))
         print("La altura del árbol implementado para este requerimiento es: "+ str(info[1]))
         print("="*40)
-        
+
+    elif int(inputs[0]) == 3:
+        min= float(input("Ingrese el límite inferior en segundos: "))
+        max= float(input("Ingrese el límite superior en segundos: "))
+        info= controller.sightings_by_duration(catalog,min,max)
+
+        print("La duración máxima en el registro es "+ str(info[0])+" segundos y hay "+ str(info[1])+" avistamientos con esa duración...")
+        print("Pero hay un total de "+ str(info[2])+ " avistamientos dentro del rango elegido...")
+        print(str(info[3])+" de los cuales están registrados con la duración máxima del rango...")
+        print("Los primeros tres avistamientos dentro del rango son:")
+        for i in range(1,4):
+            sighting= lt.getElement(info[4],i)
+            print("\tDatetime: "+sighting["datetime"]+", Location: "+sighting["city"]+", "+
+                            sighting["country"]+", Duration (secs.): "+sighting["duration (seconds)"]+
+                            ", Shape: "+sighting["shape"])
+
+        print("Los últimos tres avistamientos dentro del rango son:")
+        for i in range(-2,1):
+            sighting= lt.getElement(info[4],i)
+            print("\tDatetime: "+sighting["datetime"]+", Location: "+sighting["city"]+", "+
+                            sighting["country"]+", Duration (secs.): "+sighting["duration (seconds)"]+
+                            ", Shape: "+sighting["shape"])
+
+
     else:
         sys.exit(0)
 sys.exit(0)

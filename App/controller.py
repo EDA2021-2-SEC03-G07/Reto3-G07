@@ -53,6 +53,7 @@ def total_sightings(catalog):
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+######requerimiento 1
 def sightings_by_city(catalog,city):
     info= model.sightings_by_city(catalog,city)
     return info
@@ -60,3 +61,12 @@ def sightings_by_city(catalog,city):
 def size_city_tree(catalog):
     info= model.size_city_tree(catalog)
     return info
+############
+
+###### requerimiento 2
+def sightings_by_duration(catalog,min,max):
+    info= model.sightings_by_duration(catalog,min,max)
+    return info
+
+#########
+
