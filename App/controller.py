@@ -54,6 +54,7 @@ def total_sightings(catalog):
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+######requerimiento 1
 def sightings_by_city(catalog,city):
     info= model.sightings_by_city(catalog,city)
     return info
@@ -88,3 +89,13 @@ def size_in_range(lst):
 def sightings_by_zone(catalog,min_long,max_long,min_lat,max_lat):
     info= model.sightings_by_zone(catalog,min_long,max_long,min_lat,max_lat)
     return info
+
+############
+
+###### requerimiento 2
+def sightings_by_duration(catalog,min,max):
+    info= model.sightings_by_duration(catalog,min,max)
+    return info
+
+#########
+
