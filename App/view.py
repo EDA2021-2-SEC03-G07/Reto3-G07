@@ -1,4 +1,4 @@
-﻿"""
+"""
  * Copyright 2020, Departamento de sistemas y Computación, Universidad
  * de Los Andes
  *
@@ -237,6 +237,8 @@ while True:
             dict["location"]= j["city"] + ", "+ j["country"]
             dict["duration (secs.)"]= j["duration (seconds)"]
             dict["shape"]= j["shape"]
+            dict["latitude"]= j["latitude"]
+            dict["longitude"]= j["longitude"]
             primeros.append(dict)
         for a in primeros:
             print(a)
