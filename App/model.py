@@ -189,7 +189,7 @@ def sightings_by_duration(catalog,min,max):
 def older_hour(orderedmap):
     dates_tree = orderedmap['hour_UFO']
     #Para que imprima la hora más tardía con el número de avistamientos
-    older_hour = traversal.inorder(dates_tree)
+    older_hour = traversal.inorder(dates_tree) #o(1)
     return older_hour
     #Para listar avistamientos dentro de horas
 def hours_in_range(orderedmap, lowhour, highhour):
@@ -199,18 +199,18 @@ def hours_in_range(orderedmap, lowhour, highhour):
     maxdate = datetime.datetime.strptime(highhour, '%H:%M:%S')
     mindate = mindate.time()
     maxdate = maxdate.time()
-    lst_range = om.values(dates_tree,mindate,maxdate)
-    for i in lt.iterator(lst_range):
-        merge.sort(i,cmpByDatetime)
-        for j in lt.iterator(i):
-            lt.addLast(hours_sightings, j)
+    lst_range = om.values(dates_tree,mindate,maxdate) #o(logn)
+    for i in lt.iterator(lst_range): #o(m)
+        merge.sort(i,cmpByDatetime) #o(klogk)
+        for j in lt.iterator(i): #o(r)
+            lt.addLast(hours_sightings, j) #o(1)
     return hours_sightings
 
 #Requerimiento 4
 def older_sightings(orderedmap):
     dates_tree = orderedmap['datetime_UFO']
     #Para que imprima la fecha más antigua con el número de avistamientos
-    older_date = traversal.inorder(dates_tree)
+    older_date = traversal.inorder(dates_tree) #o(1)
     return older_date
     #Para listar avistamientos dentro de fechas
 def dates_in_range(orderedmap, lowdate, highdate):
@@ -219,39 +219,39 @@ def dates_in_range(orderedmap, lowdate, highdate):
     maxdate = datetime.datetime.strptime(highdate, '%Y-%m-%d')
     mindate = mindate.date()
     maxdate = maxdate.date()
-    lst_range = om.values(dates_tree,mindate,maxdate)
-    sub_dates = lt.subList(lst_range,0,lt.size(lst_range)+1)
-    Primeros = lt.subList(lst_range,1,3)
-    Ultimos = lt.newList('ARRAY_LIST')
+    lst_range = om.values(dates_tree,mindate,maxdate) #o(logn)
+    sub_dates = lt.subList(lst_range,0,lt.size(lst_range)+1) #o(1)
+    Primeros = lt.subList(lst_range,1,3) #o(1)
+    Ultimos = lt.newList('ARRAY_LIST') #o(1)
     j = 0
-    while j < 3:
-        last = lt.removeLast(sub_dates)
-        lt.addLast(Ultimos, last)
+    while j < 3: #o(3)
+        last = lt.removeLast(sub_dates) #o(1)
+        lt.addLast(Ultimos, last) #o(1)
         j += 1
-    Ultimos = merge.sort(Ultimos, cmpDatetolst)
+    Ultimos = merge.sort(Ultimos, cmpDatetolst) #o(mlogm)
     return lst_range,Primeros,Ultimos
 
 #Requerimiento 5
 def sightings_by_zone(catalog,min_long,max_long,min_lat,max_lat):
     data_tree = catalog["longitudes"]
-    mapas_latitud_en_rango = om.values(data_tree,min_long,max_long)
-    final_range_lst = lt.newList('ARRAY_LIST')
-    for data1 in lt.iterator(mapas_latitud_en_rango):
-        for data2 in lt.iterator(data1):
+    mapas_latitud_en_rango = om.values(data_tree,min_long,max_long) #o(logn)
+    final_range_lst = lt.newList('ARRAY_LIST') 
+    for data1 in lt.iterator(mapas_latitud_en_rango): #o(m)
+        for data2 in lt.iterator(data1): #o(k)
             cmpdata = round(float(data2['latitude']),2)
             if cmpdata >= min_lat and cmpdata <= max_lat:
-                lt.addLast(final_range_lst, data2)
-    final_range_lst = merge.sort(final_range_lst, cmpByDatetime)
-    sightings_size = size_in_range(final_range_lst)
-    sub_dates = lt.subList(final_range_lst,0,lt.size(final_range_lst)+1)
-    Primeros = lt.subList(final_range_lst,1,5)
+                lt.addLast(final_range_lst, data2) #o(1)
+    final_range_lst = merge.sort(final_range_lst, cmpByDatetime) #o(r)
+    sightings_size = size_in_range(final_range_lst) #o(1)
+    sub_dates = lt.subList(final_range_lst,0,lt.size(final_range_lst)+1) #o(1)
+    Primeros = lt.subList(final_range_lst,1,5) #o(1)
     Ultimos = lt.newList('ARRAY_LIST')
     j = 0
-    while j < 5:
-        last = lt.removeLast(sub_dates)
-        lt.addLast(Ultimos, last)
+    while j < 5: #(5)
+        last = lt.removeLast(sub_dates) #o(1)
+        lt.addLast(Ultimos, last) #o(1)
         j += 1
-    Ultimos = merge.sort(Ultimos, cmpByDatetime)
+    Ultimos = merge.sort(Ultimos, cmpByDatetime) #o(hlogh)
     return final_range_lst, sightings_size, Primeros, Ultimos
 
 #Funciones generales
